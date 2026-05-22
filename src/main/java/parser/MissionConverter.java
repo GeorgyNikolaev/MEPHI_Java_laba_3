@@ -16,12 +16,8 @@ public class MissionConverter {
     public static Mission convertToMission(Map<String, Object> data) throws MissionParsingException {
         // 2. Создание миссии
         Mission mission = new Mission();
-        for (Map.Entry<?, ?> entry : data.entrySet()) {
-            System.out.printf("%-15s : %s%n", entry.getKey(), entry.getValue());
-        }
-        System.out.println("-".repeat(10));
 
-        // 3. Заполнение основных полей
+        // Заполнение основных полей
         mission.setMissionId(getString(data, "missionId", true));
         mission.setDate(getDate(data, "date", true));
         mission.setLocation(getString(data, "location", true));

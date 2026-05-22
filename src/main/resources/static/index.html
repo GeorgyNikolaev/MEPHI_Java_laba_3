@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Mission Analyzer</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="/css/styles.css"/>
+</head>
+<body>
+<div class="bg-gradient" aria-hidden="true"></div>
+<div class="noise" aria-hidden="true"></div>
+
+<header class="header">
+  <div class="brand">
+    <span class="logo" aria-hidden="true"></span>
+    <div>
+      <h1>Mission Analyzer</h1>
+      <p class="tagline">Загрузка миссий, хранение и отчёты</p>
+    </div>
+  </div>
+  <nav class="nav">
+    <a class="link" href="/swagger-ui/index.html" target="_blank" rel="noopener">Swagger UI</a>
+    <a class="link" href="/api/v3/api-docs" target="_blank" rel="noopener">OpenAPI JSON</a>
+  </nav>
+</header>
+
+<main class="layout">
+  <section class="panel upload-panel card">
+    <h2>Загрузить миссию</h2>
+    <p class="hint">Поддерживаются JSON, XML, YAML, TXT и другие форматы из вашей фабрики парсеров.</p>
+    <label class="file-drop" id="dropZone">
+      <input type="file" id="fileInput" accept=".json,.xml,.yaml,.yml,.txt"/>
+      <span class="file-drop__text">Перетащите файл сюда или нажмите для выбора</span>
+      <span class="file-drop__name" id="fileName"></span>
+    </label>
+    <button type="button" class="btn primary" id="uploadBtn" disabled>Загрузить в базу</button>
+    <div class="toast-area" id="toastArea" role="status" aria-live="polite"></div>
+  </section>
+
+  <section class="panel list-panel card">
+    <div class="section-head">
+      <h2>Миссии</h2>
+      <button type="button" class="btn ghost" id="refreshBtn">Обновить</button>
+    </div>
+    <div class="table-wrap">
+      <table class="missions-table" id="missionsTable">
+        <thead>
+        <tr>
+          <th>Код</th>
+          <th>Дата</th>
+          <th>Локация</th>
+          <th>Исход</th>
+          <th>Файл</th>
+          <th></th>
+        </tr>
+        </thead>
+        <tbody id="missionsBody"></tbody>
+      </table>
+      <p class="empty" id="emptyState">Пока нет загруженных миссий.</p>
+    </div>
+  </section>
+
+  <section class="panel detail-panel card" id="detailPanel" hidden>
+    <div class="section-head">
+      <h2>Детали</h2>
+      <button type="button" class="btn ghost" id="closeDetailBtn">Закрыть</button>
+    </div>
+    <div id="detailContent" class="detail-content"></div>
+  </section>
+
+  <section class="panel report-panel card">
+    <h2>Создать отчёт</h2>
+    <p class="hint">Выберите миссию в таблице, затем тип отчёта и нажмите «Сгенерировать».</p>
+    <div class="report-controls">
+      <label class="field">
+        <span>Тип отчёта</span>
+        <select id="reportType">
+          <option value="SUMMARY">Краткий (SUMMARY)</option>
+          <option value="DETAILED">Детальный (DETAILED)</option>
+          <option value="RISK">Риски (RISK)</option>
+          <option value="STATISTICAL">Статистика (STATISTICAL)</option>
+        </select>
+      </label>
+      <button type="button" class="btn primary" id="reportBtn" disabled>Сгенерировать</button>
+    </div>
+    <div id="reportOutput" class="report-output" hidden>
+      <h3>Результат</h3>
+      <pre id="reportText"></pre>
+    </div>
+    <div class="section-head subhead">
+      <h3>Сохранённые отчёты по выбранной миссии</h3>
+      <button type="button" class="btn ghost sm" id="loadReportsBtn" disabled>Загрузить список</button>
+    </div>
+    <ul class="report-list" id="reportList"></ul>
+  </section>
+</main>
+
+<footer class="footer">
+  <span>REST API: <code>/api/missions</code> · PostgreSQL · Spring Boot</span>
+</footer>
+
+<script src="/js/app.js" defer></script>
+</body>
+</html>

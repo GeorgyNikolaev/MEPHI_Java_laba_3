@@ -1,0 +1,36 @@
+spring:
+  application:
+    name: mission-analyzer
+  servlet:
+    multipart:
+      max-file-size: 16MB
+      max-request-size: 16MB
+  datasource:
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:mission_analyzer}
+    username: ${DB_USER:mission}
+    password: ${DB_PASSWORD:mission}
+    hikari:
+      maximum-pool-size: 10
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        format_sql: true
+        jdbc:
+          time_zone: UTC
+server:
+  port: ${SERVER_PORT:8080}
+
+springdoc:
+  api-docs:
+    path: /api/v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    tags-sorter: alpha
+    operations-sorter: alpha
+
+logging:
+  level:
+    org.hibernate.SQL: WARN
