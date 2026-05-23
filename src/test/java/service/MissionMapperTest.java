@@ -2,17 +2,35 @@ package service;
 
 import domain.*;
 import enums.*;
+import jakarta.persistence.EntityManager;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.test.util.ReflectionTestUtils;
 import persistence.entity.MissionEntity;
 import persistence.entity.SorcererEntity;
+import support.MissionTestFixtures;
 
 import java.time.LocalDate;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.verify;
 
+@ExtendWith(MockitoExtension.class)
 class MissionMapperTest {
 
-    private final MissionMapper mapper = new MissionMapper();
+    @Mock
+    private EntityManager entityManager;
+
+    private MissionMapper mapper;
+
+    @BeforeEach
+    void setUp() {
+        mapper = new MissionMapper();
+        ReflectionTestUtils.setField(mapper, "entityManager", entityManager);
+    }
 
     @Test
     void toDomain_roundTrip_preservesCoreFields() {
@@ -67,5 +85,61 @@ class MissionMapperTest {
         assertEquals("Flash", restored.getTechniques().get(0).getTechnique().getName());
         assertEquals("Alice", restored.getTechniques().get(0).getOwner().getName());
         assertEquals(500L, restored.getTechniques().get(0).getDamage());
+    }
+
+    @Test
+    void newEntityFromDomain_assignsSequentialPosToChildren() {
+        Mission source = MissionTestFixtures.sampleMission();
+
+        MissionEntity entity = mapper.newEntityFromDomain(source, "fixture.json");
+
+        assertEquals(0, entity.getSorcerers().get(0).getPos());
+        assertEquals(0, entity.getTechniques().get(0).getPos());
+    }
+
+    @Test
+    void replaceMissionPayload_replacesNestedDataAndFlushesSession() {
+        MissionEntity existing = mapper.newEntityFromDomain(MissionTestFixtures.sampleMission(), "old.json");
+        existing.setId(1L);
+        for (SorcererEntity s : existing.getSorcerers()) {
+            s.setId(10L);
+        }
+
+        Mission updated = new Mission();
+        updated.setMissionId("M-UPDATED");
+        updated.setDate(LocalDate.of(2025, 1, 1));
+        updated.setLocation("Osaka");
+        updated.setOutcome(MissionOutcome.FAILURE);
+        Curse curse = new Curse();
+        curse.setName("New curse");
+        curse.setThreatLevel(ThreatLevel.LOW);
+        updated.setCurse(curse);
+
+        mapper.replaceMissionPayload(existing, updated, "new.json");
+
+        verify(entityManager).flush();
+        assertEquals("M-UPDATED", existing.getMissionCode());
+        assertEquals("Osaka", existing.getLocation());
+        assertEquals(MissionOutcome.FAILURE, existing.getOutcome());
+        assertEquals("new.json", existing.getSourceFilename());
+        assertNotNull(existing.getCurse());
+        assertEquals("New curse", existing.getCurse().getName());
+        assertTrue(existing.getSorcerers().isEmpty());
+    }
+
+    @Test
+    void toDomain_sortsChildrenByPos() {
+        MissionEntity entity = mapper.newEntityFromDomain(MissionTestFixtures.sampleMission(), "f.json");
+        entity.getSorcerers().get(0).setPos(1);
+        entity.getSorcerers().add(new SorcererEntity());
+        entity.getSorcerers().get(1).setMission(entity);
+        entity.getSorcerers().get(1).setPos(0);
+        entity.getSorcerers().get(1).setName("Zeta");
+        entity.getSorcerers().get(1).setRank(SorcererRank.GRADE_2);
+
+        Mission restored = mapper.toDomain(entity);
+
+        assertEquals("Zeta", restored.getSorcerers().get(0).getName());
+        assertEquals("Alice", restored.getSorcerers().get(1).getName());
     }
 }

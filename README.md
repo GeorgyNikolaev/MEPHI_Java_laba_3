@@ -69,11 +69,32 @@ mvn spring-boot:run
 
 ## Тесты
 
+Запуск всех юнит-тестов:
+
 ```bash
 mvn test
 ```
 
-Простые тесты: маппинг миссии (`MissionMapperTest`), фабрика отчётов (`ReportFactoryTest`), REST-контроллер на `MockMvc` (`MissionControllerTest`).
+Набор тестов покрывает основную бизнес-логику, проверку входных данных и REST API (без поднятия PostgreSQL — репозитории и сервисы мокируются там, где нужно).
+
+| Класс теста | Что проверяет |
+|-------------|----------------|
+| `parser/MissionParsingTest` | Корректный разбор JSON без искажений; отклонение битого JSON, отсутствующего `curse`, неверного `outcome`; неподдерживаемое расширение; файл из `missions/A` |
+| `parser/MissionConverterTest` | Преобразование карты в `Mission`; обязательные поля и валидность enum |
+| `service/MissionMapperTest` | Round-trip domain ↔ entity; порядок `pos`; замена данных при обновлении (`replaceMissionPayload` + `flush`) |
+| `service/MissionApplicationServiceTest` | Пустой файл; создание и обновление миссии; удаление; генерация и список отчётов; `EntityNotFoundException` |
+| `reporter/ReportFactoryTest` | Поддержка всех типов отчётов |
+| `reporter/SummaryReportTest` | Содержимое сгенерированного краткого отчёта |
+| `api/MissionControllerTest` | HTTP-контракт всех эндпоинтов; 400 при ошибке парсинга; 404 при отсутствии миссии |
+
+Тестовые файлы миссий лежат в `src/test/resources/missions/`:
+
+- `valid-mission.json` — корректная миссия;
+- `invalid-malformed.json` — повреждённый JSON;
+- `invalid-missing-curse.json` — неполные данные;
+- `invalid-bad-outcome.json` — неверное значение перечисления.
+
+На **Java 25** в `pom.xml` для Surefire задан флаг `-Dnet.bytebuddy.experimental=true` (для Mockito).
 
 ## Сборка JAR
 

@@ -1,0 +1,10 @@
+{
+  "missionId": "BAD-002",
+  "date": "2024-01-01",
+  "location": "Test City",
+  "outcome": "NOT_A_REAL_OUTCOME",
+  "curse": {
+    "name": "Test curse",
+    "threatLevel": "HIGH"
+  }
+}
